@@ -40,9 +40,13 @@ class AuthController extends Controller
             return response()->json(['status' => false, 'message' => 'Invalid credentials'], 401);
         }
     }
-    public function user(Request $request): JsonResponse
+    public function user()
     {
-        $data = Auth::user();
-        return response()->json(['status' => true, 'message' => 'User login successfully', 'data' => $data], 200);
+        return response()->json(Auth::user());
+    }
+    public function logout()
+    {
+        Auth::user()->tokens()->delete();
+        return response()->json(['message' => 'Logged out successfully']);
     }
 }

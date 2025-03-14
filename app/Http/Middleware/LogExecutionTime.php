@@ -4,10 +4,10 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 
-class UserMiddleware
+class LogExecutionTime
 {
     /**
      * Handle an incoming request.
@@ -16,10 +16,12 @@ class UserMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $user = Auth::user();
-        if (!$user || $user->role !== 'user') {
-            return response()->json(['status' => false, 'message' => 'Unauthorized..'], 403);
-        }
-        return $next($request);
+        $startTime = microtime(true);
+        $response = $next($request);
+        $endTime = microtime(true);
+        $executionTime = $endTime - $startTime;
+
+        Log::info('Execution Time: ' . $executionTime . ' seconds', ['url' => $request->fullUrl()]);
+        return $response;
     }
 }

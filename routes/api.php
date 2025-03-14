@@ -29,7 +29,7 @@ Route::middleware(['auth:sanctum', 'log_data'])->group(function () {
 
     Route::middleware('user')->prefix('user')->group(function () {
         Route::get('/tasks', [UserTaskController::class, 'list']);
-        Route::put('/tasks/{id}/list', [AdminTaskController::class, 'listData']);
+        Route::get('/tasks/{id}/list', [UserTaskController::class, 'listData']);
         Route::put('/tasks/{id}/complete', [UserTaskController::class, 'complete']);
     });
 });

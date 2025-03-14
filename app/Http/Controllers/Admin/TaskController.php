@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Task\TaskAddRequest;
+use App\Http\Requests\Task\TaskAssignRequest;
+use App\Http\Requests\Task\TaskStatusRequest;
 use App\Models\{Task, User};
 use App\Services\TaskService;
 use Carbon\Carbon;
@@ -17,15 +20,9 @@ class TaskController extends Controller
         $this->taskService = $taskService;
     }
 
-    public function create(Request $request): JsonResponse
+    public function create(TaskAddRequest $request): JsonResponse
     {
         try {
-            $request->validate([
-                'title'       => 'required|string|max:255',
-                'description' => 'nullable|string',
-                'status'      => 'in:pending,completed'
-            ]);
-
             $task = $this->taskService->createTask($request->all());
             if (!$task) {
                 return response()->json(['status' => false, 'message' => 'failed'], 400);
@@ -36,20 +33,13 @@ class TaskController extends Controller
             return response()->json(['status' => false, 'message' => $e->getMessage()], 400);
         }
     }
-    public function assign(Request $request, $id): JsonResponse
+    public function assign(TaskAssignRequest $request, $id): JsonResponse
     {
         try {
-            $request->validate([
-                'user_id'  => 'required|exists:users,id',
-                'due_date' => 'nullable|date'
-            ]);
-
             $task = $this->taskService->assignTask($request->all(), $id);
             if (!$task) {
                 return response()->json(['status' => false, 'message' => 'failed'], 400);
             }
-
-
             return response()->json(['status' => true, 'message' => 'Task assigned successfully', 'data' => $task], 200);
         } catch (\Exception $e) {
             return response()->json(['status' => false, 'message' => $e->getMessage()], 400);
@@ -81,12 +71,9 @@ class TaskController extends Controller
             return response()->json(['status' => false, 'message' => $e->getMessage()], 400);
         }
     }
-    public function changeStatus(Request $request, $id): JsonResponse
+    public function changeStatus(TaskStatusRequest $request, $id): JsonResponse
     {
         try {
-            $request->validate([
-                'status' => 'required|in:pending,in_progress,completed'
-            ]);
             $tasks = $this->taskService->changeTaskStatus($id, $request->status);
             if (!$tasks) {
                 return response()->json(['status' => false, 'message' => 'failed'], 400);
